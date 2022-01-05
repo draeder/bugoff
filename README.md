@@ -1,3 +1,3 @@
-# bugspray
+# bugoff
 
-A message encryption and storage wrapper for Bugout using Gun's SEA suite
+A message encryption and storage extension for Bugout using Gun DB
