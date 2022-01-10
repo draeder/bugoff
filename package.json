@@ -1,0 +1,30 @@
+{
+  "name": "bugoff",
+  "version": "1.0.0",
+  "description": "A message encryption and storage extension for Bugout using Gun DB",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/draeder/bugoff.git"
+  },
+  "keywords": [
+    "bugout",
+    "gun",
+    "webtorrent",
+    "p2p",
+    "decentralization"
+  ],
+  "author": "Daniel Raeder",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/draeder/bugoff/issues"
+  },
+  "homepage": "https://github.com/draeder/bugoff#readme",
+  "dependencies": {
+    "bugout": "0.0.12",
+    "gun": "^0.2020.1235"
+  }
+}
