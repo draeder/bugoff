@@ -1,14 +1,17 @@
 # Bugoff
-A [Gun DB](https://github.com/amark/gun) extension that ships *secure ephemeral messaging between Gun peers using [Bugout](https://github.com/chr15m/bugout), secured by Gun's SEA suite
+A [Gun DB](https://github.com/amark/gun) extension that ships secure* ephemeral messaging between Gun peers using [Bugout](https://github.com/chr15m/bugout), secured by Gun's SEA suite
 
 # About
 Gun peers typically communicate messages with each other by listening for graph change events. That means those messages generally must be stored somewhere on the graph before a peer receives a message about it. Bugoff glues together Gun and Bugout (which is a decentralized messaging library based on WebRTC/WebTorrent).
 
+Bugoff peers connect to each other through Bugout, which uses a WebTorrent extension to swarm peers together based on an infohash shared to the WebTorrent network. Since the infohash represents the room name and is in clear text, Bugoff abstracts that away with a SHA256 hash of the room name, so only those who know the room name and/or its hash can join it.
+
 Bugoff creates an SEA encryption pair for every Bugout connection, encrypts each message with a shared secret, then decrypts the message once received by the recipient peer(s).
 
-## Status*
+## *Status
 Bugoff is in an experimental state. Some intended features and functionality are not working correctly yet and has not been audited:
 
+- Bugoff should work in the browser with Browserify, but has not yet been tested.
 - Ability to pass in and use Gun SEA pairs. This may work if you experiment with it, but it is not built in yet.
 - Gun method chaining has not yet been tested, although this is a Gun chain extension.
 - Implement/improve swarm-wide encryption. Although broadcast message encryption is present, it is based on an SEA pair all peers share.
