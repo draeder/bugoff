@@ -28,7 +28,10 @@ let gun = new Gun()
 // { announce: 'wss://yourtracker/' }
 gun.bugoff('some room identifier', opts)
 
-// Log your Bugoff/Bugout instance address
+// Log your Bugoff room/swarm identifier. This can be passed back in for other peers to join
+console.log(gun.bugoff.id)
+
+// Log your Bugoff/Bugout peer instance address
 console.log('My address:', gun.bugoff.address())
 
 gun.bugoff.on('seen', (address) => {

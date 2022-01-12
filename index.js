@@ -6,10 +6,12 @@ const Bugout = require('bugout')
 Gun.chain.bugoff = async function(identifier, opts) {
   "use strict"
   let id = sha(identifier)
-  console.log(id)
+
 
   let gun = this
   let bugoff = this.bugoff = new Bugout(id, opts)
+
+  bugoff.id = id
 
   bugoff.roomSEA = { pair: await SEA.pair(), timestamp: new Date().getTime() }
 

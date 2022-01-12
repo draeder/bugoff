@@ -5,6 +5,9 @@ let gun = new Gun([{peers: 'https://relay.peer.ooo/gun'}])
 
 gun.bugoff('some room identifier', { announce: 'wss://tracker.peer.ooo' })
 
+// Bugoff room/swarm identifier
+console.log(gun.bugoff.id)
+
 console.log('My address:', gun.bugoff.address())
 
 gun.bugoff.on('seen', (address) => {
