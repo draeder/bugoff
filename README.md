@@ -2,7 +2,7 @@
 A [Gun DB](https://github.com/amark/gun) extension that ships secure* ephemeral messaging between Gun peers using [Bugout](https://github.com/chr15m/bugout), secured by Gun's SEA suite
 
 # About
-Gun peers typically communicate messages with each other by listening for graph change events. That means those messages generally must be stored somewhere on the graph before a peer receives a message about it. Bugoff glues together Gun and Bugout (which is a decentralized messaging library based on WebRTC/WebTorrent) to provide ephemeral messaging between peers that does not need to, but may, be stored in a Gun DB graph.
+Gun peers typically communicate messages with each other by listening for graph change events. That means those messages generally must be stored somewhere on the graph before a peer receives a message about it. Bugoff glues together Gun and Bugout (which is a decentralized messaging library based on WebRTC/WebTorrent) to provide ephemeral messaging between peers that does not need to -- but may -- be stored in a Gun DB graph.
 
 Bugoff peers connect to each other through Bugout, which uses a WebTorrent extension to swarm peers together based on an infohash shared to the WebTorrent network. Since the infohash represents the room name and is in clear text, Bugoff abstracts that away with a SHA256 hash of the room name, so only those who know the room name and/or its hash can join it.
 
