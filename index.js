@@ -1,57 +1,95 @@
+const crypto = require('crypto')
+const Gun = require('gun')
 const { SEA } = require('gun')
 const Bugout = require('bugout')
 
-Bugout.prototype.pair = async function(address, epub) {
-  this.SEA = await SEA.pair()
-  return this.SEA
-}
+Gun.chain.bugoff = async function(identifier, opts) {
+  "use strict"
+  let id = sha(identifier)
+  console.log(id)
 
-Bugout.prototype.exchange = async function(address, local, epub, cb){
-  this.send(address, {[local]: {epub: epub}}) // this should be an rpc?
-  this.once('message', (address, message) => {
-    if(typeof message === 'object' && message[address]){
-      this.peers[address].epub = message[address].epub
-      cb(this.peers)
+  let gun = this
+  let bugoff = this.bugoff = new Bugout(id, opts)
+
+  bugoff.roomSEA = { pair: await SEA.pair(), timestamp: new Date().getTime() }
+
+  bugoff.sea = await SEA.pair()
+
+  bugoff.register('peer', (address, epub, cb) =>{
+    bugoff.peers[address].epub = epub
+    cb(bugoff.peers)
+    bugoff.emit('epub', bugoff.peers)
+  })
+
+  bugoff.register('room', (address, roomSEA, cb) =>{
+    if(roomSEA.timestamp < bugoff.roomSEA.timestamp) {
+      bugoff.roomSEA = {pair: roomSEA.pair, timestamp: roomSEA.timestamp}
     }
+    cb(roomSEA)
   })
-}
 
-Bugout.prototype.transmit = async function(pair, address, message) {
-  let enc = await SEA.encrypt(message, await SEA.secret(await this.peers[address].epub, pair))
-  this.send(address, enc)
-}
-
-Bugout.prototype.receive = async function(pair, cb) {
-  this.once('message', async (address, message) => {
-    let dec = await SEA.decrypt(message, await SEA.secret(this.peers[address].epub, pair))
-    cb(address, dec)
+  bugoff.on('seen', async address => {
+    bugoff.rpc(address, 'peer', await bugoff.sea.epub)
+    bugoff.rpc(address, 'room', await bugoff.roomSEA)
   })
-}
 
-async function Bugoff(identifier, opts) {
-  let b = new Bugout(identifier)
-
-  console.log('My address:', b.address())
-
-  let pair = await b.pair()
-
-  b.on('seen', async address => {
-    
-    await b.exchange(address, b.address(), pair.epub, async (cb) => {
-      await b.transmit(pair, address, 'hi there')
-
-      await b.receive(pair, (address, message) =>{
-        console.log(message)
+  bugoff.on('message', async (address, message) => {
+    (async function checkEpub(){
+      if(bugoff.peers[address] && !bugoff.peers[address].epub) {
+        setTimeout(checkEpub, 50)
+        return
+      }
+      try {
+        let dec = await SEA.decrypt(message, await SEA.secret(bugoff.peers[address].epub, bugoff.sea))
+        if(dec) bugoff.emit('decrypted', address, dec)
+      } 
+      catch (err) {
+        try {
+          let msg = await SEA.verify(message, bugoff.roomSEA.pair.pub)
+          let dec = await SEA.decrypt(msg, bugoff.roomSEA.pair)
+          let proof = await SEA.work(dec, bugoff.roomSEA.pair)
+          if(dec && proof) bugoff.emit('decrypted', address, dec)
+        } catch (err) {}
+      }
+    })()
+  })
+  
+  async function patchSend(value, args){
+    let epub = new Promise(async (resolve, reject) => {  
+      bugoff.on('epub', peers => {
+        resolve(peers)
       })
     })
-  
-  })
 
-  // all other bugout messages
-  b.on('message', (address, message) => {
-    //console.log(address, message)
-  })
+    if(await epub){
+      let address, message
+      if(args.length === 2) {
+        // this is a direct message
+        address = args[0]
+        message = args[1]
+        let enc = await SEA.encrypt(message, await SEA.secret(bugoff.peers[address].epub, bugoff.sea))
+        return [address, enc]
+      } else
+      if(args.length === 1) {
+        // this is a broadcast message
+        message = args[0]
+        let enc = await SEA.encrypt(message, await bugoff.roomSEA.pair)
+        let data = await SEA.sign(enc, bugoff.roomSEA.pair)
+        return [data]
+      }
+    }
+  }
 
+  bugoff.send = (function(){
+    var send = bugoff.send
+    return async function(){
+      return send.apply(this, await patchSend(this, arguments))
+    }
+  })()
+
+  function sha(input){
+    return crypto.createHash('sha256').update(JSON.stringify(input)).digest('hex')
+  }
+
+  return gun
 }
-
-module.exports = Bugoff
