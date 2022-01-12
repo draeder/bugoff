@@ -6,13 +6,13 @@ Gun peers typically communicate messages with each other by listening for graph 
 
 Bugoff creates an SEA encryption pair for every Bugout connection, encrypts each message with a shared secret, then decrypts the message once received by the recipient peer(s).
 
-## Status (*experimental)
-Bugoff is in an experimental state. Some intended features and functionality are not working correctly yet and has not been audited.
+## Status*
+Bugoff is in an experimental state. Some intended features and functionality are not working correctly yet and has not been audited:
 
-- Swarm-wide encryption. Although broadcast message encryption is present, it is based on an SEA pair all peers share.
 - Ability to pass in and use Gun SEA pairs. This may work if you experiment with it, but it is not built in yet.
-- Gun method chaining has not yet been tested
-- A bug exists with broadcast message decryption logging `Could not decrypt` to the console, despite decryption occurring successfully
+- Gun method chaining has not yet been tested, although this is a Gun chain extension.
+- Implement/improve swarm-wide encryption. Although broadcast message encryption is present, it is based on an SEA pair all peers share.
+- A bug exists with broadcast message decryption logging `Could not decrypt` to the console, despite decryption occurring successfully.
 
 ### Example
 ```js
@@ -49,7 +49,6 @@ gun.bugoff.on('message', (address, message) => {
   console.log('Encrypted:', message, 'From:', address)
 })
 ```
-
 
 # Contact
 All feedback, critique, bug reports are welcome and expected. Please [submit an issue](https://github.com/draeder/bugoff/issues), or [chat with me about it](https://chat.gun.eco)
