@@ -1,5 +1,5 @@
 # Bugoff
-A Gun DB extension that ships *secure ephemeral messaging between Gun peers using Bugout, secured by Gun's SEA suite
+A [Gun DB](https://github.com/amark/gun) extension that ships *secure ephemeral messaging between Gun peers using [Bugout](https://github.com/chr15m/bugout), secured by Gun's SEA suite
 
 # About
 Gun peers typically communicate messages with each other by listening for graph change events. That means those messages generally must be stored somewhere on the graph before a peer receives a message about it. Bugoff glues together Gun and Bugout (which is a decentralized messaging library based on WebRTC/WebTorrent).
@@ -52,3 +52,5 @@ gun.bugoff.on('message', (address, message) => {
 
 # Contact
 All feedback, critique, bug reports are welcome and expected. Please [submit an issue](https://github.com/draeder/bugoff/issues), or [chat with me about it](https://chat.gun.eco)
+
+## MIT licensed
