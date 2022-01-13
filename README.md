@@ -1,4 +1,7 @@
-# Bugoff
+# 🚧 Bugoff
+
+> 🚧 - This is currently a work in progress 
+
 A [Gun DB](https://github.com/amark/gun) extension that ships secure* ephemeral messaging between Gun peers using [Bugout](https://github.com/chr15m/bugout), secured by Gun's SEA suite
 
 ## About
