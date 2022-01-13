@@ -34,10 +34,6 @@ function Bugoff(identifier, opts) {
     else this.bugout.send(address, encrypted)
   })
 
-  this.send = async (address, message) => {
-    encrypt(address, message)
-  }
-
   this.on('message', async (address, message) => {
     let decrypted = await decrypt(address, message)
     let addr = await decrypted.address
@@ -62,6 +58,8 @@ function Bugoff(identifier, opts) {
       this.events.emit('encoded', [address, enc])
     }
   }
+
+  this.send = encrypt
 
   let decrypt = async (address, message) => {
     let pubkeys
