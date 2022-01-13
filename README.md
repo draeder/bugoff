@@ -11,10 +11,15 @@ Bugoff peers connect to each other through [Bugout](https://github.com/chr15m/bu
 ### Status
 *Bugoff is in an experimental state. Some intended features and functionality may not yet work correctly. Please use with care!
 
-## Example
+## Install
+```js
+> npm i bugoff
+```
+
+# Example
 ```js
 const { SEA } = require('gun')
-const Bugoff = require('./index')
+const Bugoff = require('bugoff')
 
 ;(async ()=>{
   let bugoff = new Bugoff('test 12342533434646', { announce: 'wss://tracker.peer.ooo' })
@@ -53,43 +58,43 @@ const Bugoff = require('./index')
 })()
 ```
 
-## API
+# API
 Bugoff follows the [Bugout API](https://github.com/chr15m/bugout/blob/master/docs/API.md), with this primary exception:
 
 1. Every message is encrypted using the Gun SEA suite, so the `bugoff.on()` and `bugoff.once()` methods require a new listener for decryption: `bugout.on('decrypted', (address, pubkeys, message))` & `bugout.once('decrypted', (address, pubkeys, message))`
 
 Bugoff will be further expanded / tested for [Gun chaining methods](https://gun.eco/docs/Adding-Methods-to-the-Gun-Chain) in later versions.
 
-### Properties
-#### `bugoff.identifier`
+## Properties
+### `bugoff.identifier`
 Returns the Bugoff swarm identifier, a SHA256 hash of the identifier that is passed in to create the swarm.
 
-#### `bugoff.address`
+### `bugoff.address`
 Returns this instance's Bugoff address. This can be used by other peers to directly send messages to this instance.
 
-#### `bugoff.sea`
+### `bugoff.sea`
 Return the Gun SEA pair this instance is using.
 
 This is an asychronous call and must be used with `await`.
 
-##### Example
+#### Example
 ```js
 console.log('Bugoff swarm ID:', bugoff.identifier)
 console.log('My address:', bugoff.address)
 console.log('Insance encryption keys:', await bugoff.sea)
 ```
 
-### Methods
-#### `bugoff.SEA([pair])`
+## Methods
+### `bugoff.SEA([pair])`
 Generate or pass in a Gun SEA pair. If `pair` is not specified, Bugoff will generate and use its own pair for this instance.
 
 This is an asychronous call and must be used with `await`.
 
-### Events
-#### 'decrypted', (address, pubkeys, message)
+## Events
+### 'decrypted', (address, pubkeys, message)
 Returns decrypted messages on the target Bugoff instance.
 
-##### Example
+#### Example
 ```js
 bugoff.on('decrypted', (address, pubkeys, message) => {
   console.log('From address:', address)
@@ -98,6 +103,9 @@ bugoff.on('decrypted', (address, pubkeys, message) => {
 })
 ```
 
+### 'message', (address, message)
+Returns encrypted messages on the target Bugoff instance. This may be useful for storing encrypted messages somewhere else, or for debugging.
+
 ## TODO
 - Test with browsers. Bugoff *should* work in the browser with Browserify.
 - Extend to Gun as a Gun chain extension.
@@ -105,4 +113,4 @@ bugoff.on('decrypted', (address, pubkeys, message) => {
 ## Contact
 All feedback, critique, bug reports are welcome and expected. Please [submit an issue](https://github.com/draeder/bugoff/issues), or [chat with me about it](https://chat.gun.eco)
 
-### MIT licensed
+## MIT licensed

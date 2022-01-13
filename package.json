@@ -1,6 +1,6 @@
 {
-  "name": "gunout",
-  "version": "1.0.0",
+  "name": "bugoff",
+  "version": "0.0.4",
   "description": "A Bugout extension for Gun DB to provide secure ephemeral messaging between Gun peers",
   "main": "index.js",
   "scripts": {
@@ -8,21 +8,23 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/draeder/gunout.git"
+    "url": "git+https://github.com/draeder/bugoff.git"
   },
   "keywords": [
-    "gunout",
+    "bugoff",
     "bugout",
     "gun",
+    "gun db",
+    "gun js",
     "p2p",
     "decentralization"
   ],
   "author": "Daniel Raeder",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/draeder/gunout/issues"
+    "url": "https://github.com/draeder/bugoff/issues"
   },
-  "homepage": "https://github.com/draeder/gunout#readme",
+  "homepage": "https://github.com/draeder/bugoff#readme",
   "dependencies": {
     "bugout": "0.0.12",
     "crypto": "^1.0.1",
