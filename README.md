@@ -67,20 +67,21 @@ Returns the Bugoff swarm identifier, a SHA256 hash of the identifier that is pas
 #### `bugoff.address`
 Returns this instance's Bugoff address. This can be used by other peers to directly send messages to this instance.
 
+#### `bugoff.sea`
+Return the Gun SEA pair this instance is using.
+
+This is an asychronous call and must be used with `await`.
+
 ##### Example
 ```js
 console.log('Bugoff swarm ID:', bugoff.identifier)
 console.log('My address:', bugoff.address)
+console.log('Insance encryption keys:', await bugoff.sea)
 ```
 
 ### Methods
 #### `bugoff.SEA([pair])`
 Generate or pass in a Gun SEA pair. If `pair` is not specified, Bugoff will generate and use its own pair for this instance.
-
-This is an asychronous call and must be used with `await`.
-
-#### `bugoff.sea`
-Return the Gun SEA pair this instance is using.
 
 This is an asychronous call and must be used with `await`.
 
