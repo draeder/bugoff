@@ -61,7 +61,7 @@ const Bugoff = require('bugoff')
 # API
 Bugoff follows the [Bugout API](https://github.com/chr15m/bugout/blob/master/docs/API.md), with this primary exception:
 
-1. Every message is encrypted using the Gun SEA suite, so the `bugoff.on()` and `bugoff.once()` methods require a new listener for decryption: `bugout.on('decrypted', (address, pubkeys, message))` & `bugout.once('decrypted', (address, pubkeys, message))`
+1. Every message is encrypted using the Gun SEA suite, so the `bugoff.on()` and `bugoff.once()` methods require a new listener for decryption: `bugoff.on('decrypted', (address, pubkeys, message))` & `bugoff.once('decrypted', (address, pubkeys, message))`
 
 Bugoff will be further expanded / tested for [Gun chaining methods](https://gun.eco/docs/Adding-Methods-to-the-Gun-Chain) in later versions.
 
