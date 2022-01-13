@@ -1,3 +1,4 @@
+module.exports = Bugoff
 const crypto = require('crypto')
 const Gun = require('gun')
 const { SEA } = require('gun')
@@ -12,37 +13,22 @@ function Bugoff(identifier, opts) {
   this.bugout = new Bugout(identifier, opts)
   this.address = this.bugout.address()
   this.peers = {}
-
   this.SEA = async (pair) => {
     this.sea = pair || await SEA.pair()
     return this.sea
   }
-
-  this.on = (events, callback) => {
-    return this.bugout.on(events, callback)
-  }
-
-  this.once = (events, callback) => {
-    return this.bugout.once(events, callback)
-  }
-
-  this.register = (callname, func, docstring) => {
-    return this.bugout.register(callname, func, docstring)
-  }
-
-  this.rpc = (address, callname, args, callback) => {
-    return this.bugout.rpc(address, callname, args, callback)
-  }
-
+  // Bugout internals bindings
+  this.on = this.bugout.on.bind(this.bugout)
+  this.once = this.bugout.once.bind(this.bugout)
+  this.register = this.bugout.register.bind(this.bugout)
+  this.rpc = this.bugout.rpc.bind(this.bugout)
   this.heartbeat = (interval) => {
     // Hearbeat patch while waiting for Bugout update in NPM
     return this.bugout.heartbeat(interval)
   }
+  this.destroy = this.bugout.destroy.bind(this.bugout)
 
-  this.destroy = (callback) => {
-    return this.bugout.destroy(callback)
-  }
-
+  // Bugoff
   this.events.on('encoded', encrypted => {
     if(typeof encrypted === 'object') this.bugout.send(encrypted[0], encrypted[1])
     else this.bugout.send(address, encrypted)
@@ -61,14 +47,7 @@ function Bugoff(identifier, opts) {
   })
 
   let encrypt = async (address, message) => {
-    let peers = new Promise((resolve, reject) => {
-      this.events.once('newPeer', (p)=>{
-        resolve(p)
-      })
-    })
-    
-    await peers
-
+    await new Promise(resolve => this.events.once('newPeer', resolve))
     if(!message) {
       msg = address
       // this is a broadcast message, encrypt with this instance SEA pair
@@ -91,7 +70,6 @@ function Bugoff(identifier, opts) {
         pubkeys = {pub: this.peers[peer].pub, epub: this.peers[peer].epub}
       }
     }
-
     let dec = await { address: address, pubkeys: pubkeys, message: SEA.decrypt(message, await SEA.secret(this.peers[address].epub, this.sea)) }
     return dec
   }
@@ -109,5 +87,3 @@ function Bugoff(identifier, opts) {
     return crypto.createHash('sha256').update(JSON.stringify(input)).digest('hex')
   }
 }
-
-module.exports = Bugoff
