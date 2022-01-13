@@ -1,6 +1,6 @@
 {
   "name": "bugoff",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "A Bugout extension for Gun DB to provide secure ephemeral messaging between Gun peers",
   "main": "index.js",
   "scripts": {

@@ -22,7 +22,7 @@ const { SEA } = require('gun')
 const Bugoff = require('bugoff')
 
 ;(async ()=>{
-  let bugoff = new Bugoff('test 12342533434646', { announce: 'wss://tracker.peer.ooo' })
+  let bugoff = new Bugoff('some unique swarm identifier')
 
   // Return this Bugoff swarm/room identifier
   console.log('Bugoff swarm ID:', bugoff.identifier)
