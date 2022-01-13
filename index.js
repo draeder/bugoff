@@ -2,96 +2,112 @@ const crypto = require('crypto')
 const Gun = require('gun')
 const { SEA } = require('gun')
 const Bugout = require('bugout')
+const events = require('events')
 
-Gun.chain.bugoff = async function(identifier, opts) {
-  "use strict"
-  let id = sha(identifier)
+function Bugoff(identifier, opts) {
+  this.events = new events.EventEmitter()
+  this.ID = sha(identifier)
+  this.identifier = this.ID
+  this.opts = opts
+  this.bugout = new Bugout(identifier, opts)
+  this.address = this.bugout.address()
+  this.peers = {}
 
+  this.SEA = async (pair) => {
+    this.sea = pair || await SEA.pair()
+    return this.sea
+  }
 
-  let gun = this
-  let bugoff = this.bugoff = new Bugout(id, opts)
+  this.on = (events, callback) => {
+    return this.bugout.on(events, callback)
+  }
 
-  bugoff.id = id
+  this.once = (events, callback) => {
+    return this.bugout.once(events, callback)
+  }
 
-  bugoff.roomSEA = { pair: await SEA.pair(), timestamp: new Date().getTime() }
+  this.register = (callname, func, docstring) => {
+    return this.bugout.register(callname, func, docstring)
+  }
 
-  bugoff.sea = await SEA.pair()
+  this.rpc = (address, callname, args, callback) => {
+    return this.bugout.rpc(address, callname, args, callback)
+  }
 
-  bugoff.register('peer', (address, epub, cb) =>{
-    bugoff.peers[address].epub = epub
-    cb(bugoff.peers)
-    bugoff.emit('epub', bugoff.peers)
+  this.heartbeat = (interval) => {
+    // Hearbeat patch while waiting for Bugout update in NPM
+    return this.bugout.heartbeat(interval)
+  }
+
+  this.destroy = (callback) => {
+    return this.bugout.destroy(callback)
+  }
+
+  this.events.on('encoded', encrypted => {
+    if(typeof encrypted === 'object') this.bugout.send(encrypted[0], encrypted[1])
+    else this.bugout.send(address, encrypted)
   })
 
-  bugoff.register('room', (address, roomSEA, cb) =>{
-    if(roomSEA.timestamp < bugoff.roomSEA.timestamp) {
-      bugoff.roomSEA = {pair: roomSEA.pair, timestamp: roomSEA.timestamp}
-    }
-    cb(roomSEA)
+  this.send = async (address, message) => {
+    encrypt(address, message)
+  }
+
+  this.on('message', async (address, message) => {
+    let decrypted = await decrypt(address, message)
+    let addr = await decrypted.address
+    let pubkeys = await decrypted.pubkeys
+    let msg = await decrypted.message
+    if(decrypted) this.bugout.emit('decrypted', addr, pubkeys, msg)
   })
 
-  bugoff.on('seen', async address => {
-    bugoff.rpc(address, 'peer', await bugoff.sea.epub)
-    bugoff.rpc(address, 'room', await bugoff.roomSEA)
-  })
-
-  bugoff.on('message', async (address, message) => {
-    (async function checkEpub(){
-      if(bugoff.peers[address] && !bugoff.peers[address].epub) {
-        setTimeout(checkEpub, 50)
-        return
-      }
-      try {
-        let dec = await SEA.decrypt(message, await SEA.secret(bugoff.peers[address].epub, bugoff.sea))
-        if(dec) bugoff.emit('decrypted', address, dec)
-      } 
-      catch (err) {
-        try {
-          let msg = await SEA.verify(message, bugoff.roomSEA.pair.pub)
-          let dec = await SEA.decrypt(msg, bugoff.roomSEA.pair)
-          let proof = await SEA.work(dec, bugoff.roomSEA.pair)
-          if(dec && proof) bugoff.emit('decrypted', address, dec)
-        } catch (err) {}
-      }
-    })()
-  })
-  
-  async function patchSend(value, args){
-    let epub = new Promise(async (resolve, reject) => {  
-      bugoff.on('epub', peers => {
-        resolve(peers)
+  let encrypt = async (address, message) => {
+    let peers = new Promise((resolve, reject) => {
+      this.events.once('newPeer', (p)=>{
+        resolve(p)
       })
     })
+    
+    await peers
 
-    if(await epub){
-      let address, message
-      if(args.length === 2) {
-        // this is a direct message
-        address = args[0]
-        message = args[1]
-        let enc = await SEA.encrypt(message, await SEA.secret(bugoff.peers[address].epub, bugoff.sea))
-        return [address, enc]
-      } else
-      if(args.length === 1) {
-        // this is a broadcast message
-        message = args[0]
-        let enc = await SEA.encrypt(message, await bugoff.roomSEA.pair)
-        let data = await SEA.sign(enc, bugoff.roomSEA.pair)
-        return [data]
+    if(!message) {
+      msg = address
+      // this is a broadcast message, encrypt with this instance SEA pair
+      for(peer in this.peers){
+        let enc = [peer, await SEA.encrypt(msg, await SEA.secret(this.peers[peer].epub, this.sea))]
+        this.events.emit('encoded', enc)
       }
+    } else
+    if(message){
+      // this is a direct message
+      let enc = await SEA.encrypt(message, await SEA.secret(this.peers[address].epub, this.sea))
+      this.events.emit('encoded', [address, enc])
     }
   }
 
-  bugoff.send = (function(){
-    var send = bugoff.send
-    return async function(){
-      return send.apply(this, await patchSend(this, arguments))
+  let decrypt = async (address, message) => {
+    let pubkeys
+    for(peer in this.peers){
+      if(peer === address){
+        pubkeys = {pub: this.peers[peer].pub, epub: this.peers[peer].epub}
+      }
     }
-  })()
+
+    let dec = await { address: address, pubkeys: pubkeys, message: SEA.decrypt(message, await SEA.secret(this.peers[address].epub, this.sea)) }
+    return dec
+  }
+
+  this.register('peer', (address, sea, cb) =>{
+    Object.assign(this.peers, {[address]:{pub: sea.pub, epub: sea.epub}})
+    this.events.emit('newPeer', this.peers)
+  })
+
+  this.on('seen', async address => {
+    this.rpc(address, 'peer', await this.sea)
+  })
 
   function sha(input){
     return crypto.createHash('sha256').update(JSON.stringify(input)).digest('hex')
   }
-
-  return gun
 }
+
+module.exports = Bugoff

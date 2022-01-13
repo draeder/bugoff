@@ -1,32 +1,38 @@
-const Gun = require('gun')
-require('./index.js')
+const { SEA } = require('gun')
+const Bugoff = require('./index')
 
-let gun = new Gun([{peers: 'https://relay.peer.ooo/gun'}])
+;(async ()=>{
+  let bugoff = new Bugoff('test 12342533434646', { announce: 'wss://tracker.peer.ooo' })
 
-gun.bugoff('some room identifier', { announce: 'wss://tracker.peer.ooo' })
+  // Return this Bugoff swarm/room identifier
+  console.log('Bugoff swarm ID:', bugoff.identifier)
 
-// Bugoff room/swarm identifier
-console.log(gun.bugoff.id)
-
-console.log('My address:', gun.bugoff.address())
-
-gun.bugoff.on('seen', (address) => {
-  // Log the new peer's address
-  console.log('Seen!', address)
+  console.log('My address:', bugoff.address)
+  // You may pass in your own Gun SEA pair
+  bugoff.SEA(await SEA.pair())
   
-  // Broadcast a message to all peers
-  gun.bugoff.send('Broadcast test message')
+  // Or let Bugoff generate a new SEA pair for you (this happens automatically)
+  await bugoff.SEA()
 
-  // Send a message directly to another peer
-  gun.bugoff.send(address, 'SEA Direct test message')
-})
+  // Return the current SEA pair
+  console.log(await bugoff.sea)
 
-// Log decrypted messages
-gun.bugoff.on('decrypted', (address, message) => {
-  console.log('Decrypted!', message, 'From:', address)
-})
+  bugoff.on('seen', address => {
+    console.log('Seen!', address)
+    // Broadcast message
+    bugoff.send('Broadcast message test')
+    // Direct message
+    bugoff.send(address, 'Direct message test')
+  })
 
-// Log only encrypted messages
-gun.bugoff.on('message', (address, message) => {
-  console.log('Encrypted:', message, 'From:', address)
-})
+  // Decrypted messages
+  bugoff.on('decrypted', (address, pubkeys, message) => {
+    console.log('From address:', address)
+    console.log('Sender pubkeys:', pubkeys)
+    console.log('Message:', message)
+  })
+
+  // Encrypted messages. May be useful for debugging.
+  bugoff.on('message', (address, data) => console.log('From:', address, 'Received message!', data))
+
+})()
