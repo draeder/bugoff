@@ -1,6 +1,5 @@
 module.exports = Bugoff
 const crypto = require('crypto')
-const Gun = require('gun')
 const { SEA } = require('gun')
 const Bugout = require('bugout')
 const events = require('events')
